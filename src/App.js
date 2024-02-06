@@ -13,6 +13,7 @@ const movie1 = {
     "Year": "2016",
     "imdbID": "tt5311514",
     "Type": "movie",
+    "BoxOffice" : "$389,813,101",
     "Poster": "https://m.media-amazon.com/images/M/MV5BODRmZDVmNzUtZDA4ZC00NjhkLWI2M2UtN2M0ZDIzNDcxYThjL2ltYWdlXkEyXkFqcGdeQXVyNTk0MzMzODA@._V1_SX300.jpg"
   }
 
@@ -25,15 +26,31 @@ const App = () => {
     const [movies, setMovies] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
+    function convertToNumber(str) {
+        if (str) {
+            // Remove non-numeric characters and convert to a number
+            return parseFloat(str.replace(/[^0-9.]/g, ''));
+        }
+        return 0; // Return 0 if the string is null, undefined, or empty
+    }
+
     const searchMovies = async (title) => {
         const response = await fetch(`${API_URL}&s=${title}`);
         const data = await response.json();
 
-        setMovies(data.Search);
+        if (data.Search && Array.isArray(data.Search)) {
+            // Sorting the array by the movie title in ascending order
+            const sortedMovies = data.Search.sort((a, b) => 
+            convertToNumber(b.BoxOffice) - convertToNumber(a.BoxOffice));
+            setMovies(sortedMovies);
+        } else {
+            // Handle the scenario when data.Search is not an array
+            setMovies([]);
+        }
     }
 
     useEffect(() => {
-        searchMovies('Your Name')
+        searchMovies('')
     }, []);
 
     return (
